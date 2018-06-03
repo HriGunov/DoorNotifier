@@ -16,6 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DoorBellProject.ino" />
+    <None Include="NoiseAgitation.ino" />
+    <None Include="Triggers.ino" />
   </ItemGroup>
- 
+  <ItemGroup>
+    <ClInclude Include="__vm\.DoorBellProject.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

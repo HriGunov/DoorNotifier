@@ -17,23 +17,49 @@ int ButtonIntensity()
 		delay(100);
 		held++;
 	}
-	if (held < triggerLimit/3)
+	if (held != 0)
 	{
-		//Buffer for accidental presses of button
-		Serial.println("short");  // the button was released in less than 2sec
-	}
-	else if (held < triggerLimit / 2)
-	{
-		//TODO Reset Wifi
-		Serial.println("medium");  // the button was released in more than 3sec
+		if (held < triggerLimit / 3)
+		{
+			//Buffer for accidental presses of button
+			Serial.println("short");  // the button was released in less than 2sec
+		}
+		else if (held < triggerLimit / 2)
+		{
+			//TODO Reset Wifi
+			Serial.println("medium");  // the button was released in more than 3sec
 
-	}
-	else if  
-	{
-		//TODO Reset config
-		Serial.println("long");  // the button was released in more than 6 sec
+		}
+		else
+		{
+			//TODO Reset config
+			Serial.println("long");  // the button was released in more than 6 sec
 
+		}
 	}
+
 }
+bool MonitorSound()
+{
+	currentSoundLevel = analogRead(soundPin);
+	sumOfSound += currentSoundLevel;
+	positionInSpan++;
 
+
+	if (positionInSpan >= ambientSoundSpan)
+	{
+		ambientSound = sumOfSound / ambientSoundSpan;
+		positionInSpan = 0;
+	}
+	//Debug
+	Serial.println("Current sound level: " + String(currentSoundLevel) + " Ambient: " + String(ambientSound));
+	Serial.println(String(ambientSoundSpan) + "\\" + String(positionInSpan));
+	if (currentSoundLevel >ambientSound + soundActivationThreshold)
+	{
+		//Debug
+		Serial.println("Some noise was made");
+		return false;
+	}
+	else false;
+}
 
