@@ -57,6 +57,7 @@ bool MonitorSound()
 	if (currentSoundLevel >ambientSound + soundActivationThreshold)
 	{
 		//Debug
+		Debug();
 		Serial.println("Some noise was made");
 		return false;
 	}
