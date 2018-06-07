@@ -10,7 +10,7 @@
 #include <esp8266httpclient.h> 
 #include <ArduinoJson.h>		  //https://github.com/bblanchon/ArduinoJson
 
-char device_name[50] = "json didn't work";
+char device_name[50] = "Home";
 bool shouldSaveConfig = false;
 
 void saveConfigCallback() {
@@ -68,7 +68,7 @@ int positionInSpan = 0;
 double sumOfSound = 0;
 double currentSoundLevel = 0;
 //Work in progress !!!!
-double soundActivationThreshold = 50;
+double soundActivationThreshold = 30;
 #pragma endregion
 
 
@@ -166,10 +166,10 @@ void setup() {
 	  json.printTo(configFile);
 	  configFile.close();
 	  //end save
+
+	ResetLights();
   }
 
-  SendActivation();
- 
 
 
 }
@@ -200,30 +200,37 @@ void loop()
 	
 	if (SoundActivation())
 	{
-		soundIntensity += 1;
+		soundIntensity += 4;
 		if (send == true)
 		{
 			SendActivation();
 			Serial.println("Activated!!!");
-			timeLastActivation = timeCurrentActivation;
+			
 			send = false;
 		}
-		//updates ligths every 5 seconds
-		if (timeCurrentActivation - timeLastActivation > 5)
-		{
-			Light(soundIntensity);
-		}
-		//Visual help
+	
 		
-		Serial.println("yup");
-		strip.SetPixelColor(1, Cblack);
-		strip.Show();
-
+		timeLastActivation = timeCurrentActivation;
 	}
 	else
 	{
-	soundIntensity--;
+		if (soundIntensity >0)
+		{
+			soundIntensity-=1;
+		}
+		if (soundIntensity >100000)
+		{
+			soundIntensity = 0;
+		}
 	}
+	Serial.println("Sound intensity:" + String(soundIntensity));
 
-	delay(200);
+
+
+	//Visual cue
+	
+	Light(soundIntensity);
+ 
+	
+	delay(75);
 }

@@ -1,11 +1,15 @@
 ﻿void Light(int intentsity)
 {
 	int level = 0;
-	if (intentsity < 150)
+	if (intentsity < 50)
+	{
+		level = 0;
+	}
+	else if (intentsity < 150)
 	{
 		level = 1;
 	}
-	else if (intentsity < 500)
+	else if (intentsity < 350)
 	{
 		level = 2;
 	}
@@ -15,11 +19,9 @@
 	}
 	 
 
-
-
 	for (int i = 0;i < 6;i++)
 	{
-		strip.SetPixelColor(i, allColors[level+1]);
+		strip.SetPixelColor(i, allColors[level]);
 		strip.Show();
 	}
 
@@ -30,7 +32,7 @@ void ResetLights()
 {
 	for (int i = 0; i<6;i++)
 	{
-		strip.SetPixelColor(1, defaultNoiseStateColor);
+		strip.SetPixelColor(i, defaultNoiseStateColor);
 		strip.Show();
 	}
 }

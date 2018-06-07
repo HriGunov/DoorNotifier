@@ -30,7 +30,7 @@ int ButtonIntensity()
 			
 			Serial.println("medium");  // the button was released in more than 3sec
 			
-			SendActivation();
+			
 			delay(100);
 			
 		}
@@ -38,7 +38,7 @@ int ButtonIntensity()
 		{
 			//TODO Reset config
 			Serial.println("long");  // the button was released in more than 6 sec
-
+			SendActivation();
 			//work in progress
 			/*WiFi.softAPdisconnect();
 			WiFi.disconnect();
@@ -60,15 +60,16 @@ bool SoundActivation()
 		positionInSpan = 0;
 		sumOfSound = 0;
 	}
+
 	//Debug
 	Serial.println("Current sound level: " + String(currentSoundLevel) + " Ambient: " + String(ambientSound));
 	Serial.println(String(ambientSoundSpan) + "\\" + String(positionInSpan));
 	//Checks if the noise is lould enough
-	if (currentSoundLevel > ambientSound + soundActivationThreshold)
+	if (currentSoundLevel < ambientSound + soundActivationThreshold)
 	{
-		
-		return true;
+		return false;
 	}
-	else false;
+	
+	return true;
 }
 

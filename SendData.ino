@@ -5,14 +5,14 @@ void SendActivation()
 	if ((WiFi.status() == WL_CONNECTED)) {
 
 		HTTPClient http;
-
+		// configure traged server and url
 		String url = "http://api.thingspeak.com/update?api_key=HU97PU6V6DSEO1DI&field1=";
 		url += String(device_name);
 		url += "&field2=";
 		url += Time();
 
-		// configure traged server and url
-		//http.begin("http://192.168.1.12/test.html", "7a 9c f4 db 40 d3 62 5a 6e 21 bc 5c cc 66 c8 3e a1 45 59 38"); //HTTPS
+		
+		//http.begin("http://192.168.1.12/test.html"
 		http.begin(url); //HTTP
 
 
