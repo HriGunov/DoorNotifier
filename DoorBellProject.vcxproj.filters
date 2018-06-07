@@ -18,6 +18,8 @@
     <None Include="DoorBellProject.ino" />
     <None Include="NoiseAgitation.ino" />
     <None Include="Triggers.ino" />
+    <None Include="WifiManager.ino" />
+    <None Include="data\config.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.DoorBellProject.vsarduino.h">

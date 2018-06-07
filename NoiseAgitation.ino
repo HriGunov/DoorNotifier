@@ -1,14 +1,29 @@
-﻿void Light()
+﻿void Light(int intentsity)
 {
-	for (int i = 0;i <6;i++)
+	int level = 0;
+	if (intentsity < 150)
 	{
-		strip.SetPixelColor(1, allColors[agitationState + 1]);
+		level = 1;
+	}
+	else if (intentsity < 500)
+	{
+		level = 2;
+	}
+	else  
+	{
+		level = 3;
+	}
+	 
+
+
+
+	for (int i = 0;i < 6;i++)
+	{
+		strip.SetPixelColor(i, allColors[level+1]);
 		strip.Show();
 	}
 
 	delay(200);
-	
-
 }
 
 void ResetLights()

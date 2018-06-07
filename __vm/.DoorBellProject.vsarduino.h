@@ -109,7 +109,7 @@ typedef long __PTRDIFF_TYPE__;
 
 #include "DoorBellProject.ino"
 #include "NoiseAgitation.ino"
+#include "SendData.ino"
 #include "Triggers.ino"
-#include "WifiManager.ino"
 #endif
 #endif

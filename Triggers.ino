@@ -27,19 +27,27 @@ int ButtonIntensity()
 		else if (held < triggerLimit / 2)
 		{
 			//TODO Reset Wifi
+			
 			Serial.println("medium");  // the button was released in more than 3sec
-
+			
+			SendActivation();
+			delay(100);
+			
 		}
 		else
 		{
 			//TODO Reset config
 			Serial.println("long");  // the button was released in more than 6 sec
 
+			//work in progress
+			/*WiFi.softAPdisconnect();
+			WiFi.disconnect();
+			ESP.restart();*/
 		}
 	}
 
 }
-bool MonitorSound()
+bool SoundActivation()
 {
 	currentSoundLevel = analogRead(soundPin);
 	sumOfSound += currentSoundLevel;
@@ -50,16 +58,16 @@ bool MonitorSound()
 	{
 		ambientSound = sumOfSound / ambientSoundSpan;
 		positionInSpan = 0;
+		sumOfSound = 0;
 	}
 	//Debug
 	Serial.println("Current sound level: " + String(currentSoundLevel) + " Ambient: " + String(ambientSound));
 	Serial.println(String(ambientSoundSpan) + "\\" + String(positionInSpan));
-	if (currentSoundLevel >ambientSound + soundActivationThreshold)
+	//Checks if the noise is lould enough
+	if (currentSoundLevel > ambientSound + soundActivationThreshold)
 	{
-		//Debug
-		Debug();
-		Serial.println("Some noise was made");
-		return false;
+		
+		return true;
 	}
 	else false;
 }

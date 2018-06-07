@@ -2,11 +2,12 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
-//needed for library
+#include <time.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <esp8266httpclient.h> 
 #include <ArduinoJson.h>		  //https://github.com/bblanchon/ArduinoJson
 
 char device_name[50] = "json didn't work";
@@ -54,6 +55,9 @@ unsigned long startTime = 0;
 
 #pragma region SoundActivation
 
+bool send = true;
+unsigned long timeCurrentActivation = 0;
+unsigned long timeLastActivation = 0;
 
 const uint8_t soundPin = A0;
 double ambientSound = 0;
@@ -68,16 +72,24 @@ double soundActivationThreshold = 50;
 #pragma endregion
 
 
+//time
+int timeZone = 3;
+unsigned long soundIntensity = 0;
+
+
 void setup() {
   Serial.begin(115200L);
-
+  strip.Begin();
+  strip.Show();
+  ESP.eraseConfig();
   pinMode(FLASH_BUTTON,INPUT_PULLUP);
 
   pinMode(soundPin, INPUT);
   ambientSound = analogRead(soundPin);
-
+  Serial.println("trying to mount");
   //wifiManager
   if (SPIFFS.begin()) {
+	  SPIFFS.format();
 	  Serial.println("mounted file system");
 	  if (SPIFFS.exists("/config.json")) {
 		  //file exists, reading and loading
@@ -96,7 +108,7 @@ void setup() {
 			  if (json.success()) {
 				  Serial.println("\nparsed json");
 
-				  strcpy(device_name, json["test"]);	 			  
+				  strcpy(device_name, json["Location"]);	 			  
 			  }
 			  else {
 				  Serial.println("failed to load json config");
@@ -111,7 +123,7 @@ void setup() {
 
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
-  WiFiManagerParameter custom_device_name("server", "mqtt server", device_name, 40);
+  WiFiManagerParameter custom_device_name("device", "device name", device_name, 40);
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -122,16 +134,19 @@ void setup() {
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
+   
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("ESP", "password")) {
+  if (!wifiManager.autoConnect("ESP-Buzzer", "password")) {
 	  Serial.println("failed to connect and hit timeout");
 	  delay(3000);
 	  //reset and try again, or maybe put it to deep sleep
 	  ESP.reset();
 	  delay(5000);
   }
-
+   
+  
+  //TimeTracking
+  configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
   //updates local variables
   strcpy(device_name, custom_device_name.getValue());
 
@@ -140,7 +155,7 @@ void setup() {
 	  Serial.println("saving config");
 	  DynamicJsonBuffer jsonBuffer;
 	  JsonObject& json = jsonBuffer.createObject();
-	  json["subnet"] = WiFi.subnetMask().toString();
+	  
 
 	  File configFile = SPIFFS.open("/config.json", "w");
 	  if (!configFile) {
@@ -153,43 +168,62 @@ void setup() {
 	  //end save
   }
 
-  //sets up lightstrip
-  strip.Begin();
-  strip.Show();
+  SendActivation();
+ 
+
 
 }
-
-void loop() {
-	ButtonIntensity();
-	if(MonitorSound())
-	{
-	ButtonIntensity();
-	Light();
-	Serial.println("yup");
-	strip.SetPixelColor(1, Cblack);
-	strip.Show();
-     
-	}
-	delay(250);
-}
-
-//Debug function 
-void Debug()
+int counter = 0;
+void loop() 
 {
-	if (SPIFFS.exists("/config.json")) {
-		//file exists, reading and loading
-		Serial.println("reading config file");
-		File configFile = SPIFFS.open("/config.json", "r");
-		if (configFile) {
-			Serial.println("opened config file");
-			size_t size = configFile.size();
-			// Allocate a buffer to store contents of the file.
-			std::unique_ptr<char[]> buf(new char[size]);
+	
+	
+	Time();
+	if (WiFi.status() == WL_CONNECTED)
+	{
+		Serial.println("yup");
 
-			configFile.readBytes(buf.get(), size);
-			DynamicJsonBuffer jsonBuffer;
-			JsonObject& json = jsonBuffer.parseObject(buf.get());
-			json.printTo(Serial);
-		}
 	}
+	else
+	{
+		Serial.println("nope");
+
+	}
+	
+	//checks if 25 seconds have past since last seinging of datas
+	if (timeCurrentActivation - timeLastActivation > 25 )
+	{
+		send = true;
+		
+	}
+	ButtonIntensity();
+	
+	if (SoundActivation())
+	{
+		soundIntensity += 1;
+		if (send == true)
+		{
+			SendActivation();
+			Serial.println("Activated!!!");
+			timeLastActivation = timeCurrentActivation;
+			send = false;
+		}
+		//updates ligths every 5 seconds
+		if (timeCurrentActivation - timeLastActivation > 5)
+		{
+			Light(soundIntensity);
+		}
+		//Visual help
+		
+		Serial.println("yup");
+		strip.SetPixelColor(1, Cblack);
+		strip.Show();
+
+	}
+	else
+	{
+	soundIntensity--;
+	}
+
+	delay(200);
 }
